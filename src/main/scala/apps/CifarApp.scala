@@ -114,7 +114,7 @@ object CifarApp {
             for (j <- 0 to numTestBatches - 1) {
               val out = workerStore.get[CaffeSolver]("solver").trainNet.forward(testIt, List("accuracy", "loss"))
               accuracy += out("accuracy").get(Array())
-              loss += ("loss").get(Array())
+              loss += out("loss").get(Array())
             }
             Array[(Float, Int)]((accuracy, numTestBatches, loss)).iterator
           }
