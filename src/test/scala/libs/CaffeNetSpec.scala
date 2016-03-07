@@ -4,6 +4,8 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 import org.bytedeco.javacpp.caffe._
 
+import scala.util.Random
+
 import libs._
 
 class CaffeNetSpec extends FlatSpec {
@@ -117,5 +119,32 @@ class CaffeNetSpec extends FlatSpec {
         batchIndex += 1
       }
     }
+
+    // do it again
+    val inputBuffer2 = new Array[Array[Array[Float]]](net.inputSize)
+    assert(net.inputSize == 2)
+    for (i <- 0 to net.inputSize - 1) {
+      inputBuffer2(i) = new Array[Array[Float]](net.batchSize)
+      for (batchIndex <- 0 to net.batchSize - 1) {
+        inputBuffer2(i)(batchIndex) = Array.range(0, net.inputBufferSize(i)).map(e => Random.nextFloat)
+      }
+    }
+
+    JavaCPPUtils.arraysToFloatBlobVector(inputBuffer2, net.inputs, net.batchSize, net.inputBufferSize, net.inputSize) // put inputBuffer into net.inputs
+    val inputBufferOut2 = JavaCPPUtils.arraysFromFloatBlobVector(net.inputs, net.batchSize, net.inputBufferSize, net.inputSize) // read inputs out of net.inputs
+
+    // check if inputBuffer and inputBufferOut are the same
+    for (i <- 0 to net.inputSize - 1) {
+      var batchIndex = 0
+      while (batchIndex < net.batchSize) {
+        var j = 0
+        while (j < inputBuffer2(i)(batchIndex).length) {
+          assert((inputBuffer2(i)(batchIndex)(j) - inputBufferOut2(i)(batchIndex)(j)).abs <= 1e-10)
+          j += 1
+        }
+        batchIndex += 1
+      }
+    }
+
   }
 }
