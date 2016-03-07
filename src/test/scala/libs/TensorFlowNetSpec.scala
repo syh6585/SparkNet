@@ -8,6 +8,7 @@ import scala.collection.mutable._
 import libs._
 import loaders._
 
+@Ignore
 class TensorFlowNetSpec extends FlatSpec {
   val sparkNetHome = sys.env("SPARKNET_HOME")
 
