@@ -94,6 +94,7 @@ class CaffeNetSpec extends FlatSpec {
     val net = CaffeNet(netParam, schema, new DefaultPreprocessor(schema))
 
     val inputBuffer = new Array[Array[Array[Float]]](net.inputSize)
+    assert(net.inputSize == 2)
     for (i <- 0 to net.inputSize - 1) {
       inputBuffer(i) = new Array[Array[Float]](net.batchSize)
       for (batchIndex <- 0 to net.batchSize - 1) {
