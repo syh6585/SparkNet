@@ -116,7 +116,7 @@ object CifarApp {
               accuracy += out("accuracy").get(Array())
               loss += out("loss").get(Array())
             }
-            Array[(Float, Int)]((accuracy, numTestBatches, loss)).iterator
+            Array[(Float, Int, Float)]((accuracy, numTestBatches, loss)).iterator
           }
         ).cache()
         val accuracies = testAccuracies.map{ case (a, b, c) => a }.sum
