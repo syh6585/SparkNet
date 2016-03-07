@@ -123,6 +123,7 @@ object CifarApp {
         logger.log("%.2f".format(100F * accuracy) + "% accuracy", i)
       }
 
+      /*
       logger.log("training", i)
       val syncInterval = 10
       trainDF.foreachPartition(
@@ -140,6 +141,7 @@ object CifarApp {
           print("iters took " + ((t3 - t2) * 1F / 1000F).toString + " s\n")
         }
       )
+      */
 
       logger.log("collecting weights", i)
       netWeights = workers.map(_ => { workerStore.get[CaffeSolver]("solver").trainNet.getWeights() }).reduce((a, b) => WeightCollection.add(a, b))
