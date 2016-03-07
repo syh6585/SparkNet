@@ -112,9 +112,22 @@ object CifarApp {
             var accuracy = 0F
             var loss = 0F
             for (j <- 0 to numTestBatches - 1) {
-              val out = workerStore.get[CaffeSolver]("solver").trainNet.forward(testIt, List("accuracy", "loss"))
+              val out = workerStore.get[CaffeSolver]("solver").trainNet.forward(testIt, List("accuracy", "loss", "prob"))
               accuracy += out("accuracy").get(Array())
               loss += out("loss").get(Array())
+              val probs = out("prob")
+              for (k <- 0 to 14) {
+                var argmax = -1
+                var maxval = -1F
+                for (c <- 0 to 9) {
+                  if (probs.get(Array[Int](k, c)) > maxval) {
+                    maxval = probs.get(Array[Int](k, c))
+                    argmax = c
+                  }
+                }
+                print("prediction = " + argmax.toString + "\n")
+              }
+              print("\n")
             }
             Array[(Float, Int, Float)]((accuracy, numTestBatches, loss)).iterator
           }
