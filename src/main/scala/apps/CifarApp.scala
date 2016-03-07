@@ -110,20 +110,23 @@ object CifarApp {
           testIt => {
             val numTestBatches = workerStore.get[Int]("testPartitionSize") / testBatchSize
             var accuracy = 0F
+            var loss = 0F
             for (j <- 0 to numTestBatches - 1) {
-              val out = workerStore.get[CaffeSolver]("solver").trainNet.forward(testIt, List("accuracy"))
+              val out = workerStore.get[CaffeSolver]("solver").trainNet.forward(testIt, List("accuracy", "loss"))
               accuracy += out("accuracy").get(Array())
+              loss += ("loss").get(Array())
             }
-            Array[(Float, Int)]((accuracy, numTestBatches)).iterator
+            Array[(Float, Int)]((accuracy, numTestBatches, loss)).iterator
           }
         ).cache()
-        val accuracies = testAccuracies.map{ case (a, b) => a }.sum
-        val numTestBatches = testAccuracies.map{ case (a, b) => b }.sum
+        val accuracies = testAccuracies.map{ case (a, b, c) => a }.sum
+        val numTestBatches = testAccuracies.map{ case (a, b, c) => b }.sum
+        val loss = testAccuracies.map{ case (a, b, c) => c }.sum / numTestBatches
         val accuracy = accuracies / numTestBatches
         logger.log("%.2f".format(100F * accuracy) + "% accuracy", i)
+        logger.log("%.2f".format(loss) + " loss", i)
       }
 
-      /*
       logger.log("training", i)
       val syncInterval = 10
       trainDF.foreachPartition(
@@ -141,7 +144,6 @@ object CifarApp {
           print("iters took " + ((t3 - t2) * 1F / 1000F).toString + " s\n")
         }
       )
-      */
 
       logger.log("collecting weights", i)
       netWeights = workers.map(_ => { workerStore.get[CaffeSolver]("solver").trainNet.getWeights() }).reduce((a, b) => WeightCollection.add(a, b))
